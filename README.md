@@ -28,3 +28,6 @@ Company-ID: 1703
 - Doppelklick auf `Start_Kuehlkette.bat`
 - Ausgabe: pro Transport-ID „OK/FAIL + eindeutige Begründung“
 - Hinweis: Es wird jeweils der **erste** festgestellte Verstoß gemeldet.
+
+## Dokumentation
+Die automatisch erzeugte HTML-Dokumentation liegt unter `docs/html/index.html`.
