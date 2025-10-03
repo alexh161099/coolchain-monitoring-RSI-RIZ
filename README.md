@@ -1,6 +1,6 @@
 # coolchain-monitoring-RSI-RIZ
 Der Hersteller „Food Solution Hildesheim“ produziert Bio-Dönerspieße. Er bietet seinen Endkunden eine zertifizierte Kühlkette für alle Produkte an. Die Einhaltung der Kühlkette kann vom Endkunden leicht über einen QR-Code überprüft werden. 
-# Kühlkettenüberwachung (
+# Kühlkettenüberwachung
 
 Dieses Programm prüft für vorgegebene Transport-IDs drei Kriterien:
 1) Stimmigkeit je Station (Reihenfolge in → out)
