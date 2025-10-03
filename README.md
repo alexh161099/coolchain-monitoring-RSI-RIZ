@@ -1,6 +1,6 @@
 # coolchain-monitoring-RSI-RIZ
 Der Hersteller „Food Solution Hildesheim“ produziert Bio-Dönerspieße. Er bietet seinen Endkunden eine zertifizierte Kühlkette für alle Produkte an. Die Einhaltung der Kühlkette kann vom Endkunden leicht über einen QR-Code überprüft werden. 
-# Kühlkettenüberwachung
+# Kühlkettenüberwachung (
 
 Dieses Programm prüft für vorgegebene Transport-IDs drei Kriterien:
 1) Stimmigkeit je Station (Reihenfolge in → out)
@@ -14,11 +14,17 @@ Dieses Programm prüft für vorgegebene Transport-IDs drei Kriterien:
 
 ## Verbindung (vorgegeben)
 Server: sc-db-server.database.windows.net  
-DB: supplychain  
-User: rse / Passwort: Pa$$w0rd
+Datenbank: supplychain  
+Benutzer: rse / Passwort: Pa$$w0rd  
+Company-ID: 1703
 
 ## Verwendung
 - In `src/main.py` COMPANY_ID anpassen (z. B. 1703).  
 - `src/main.py` starten (VS Code ►).
 - Ausgabe: Für jede Transport-ID „OK“ oder „FAIL“ mit Begründung.
 - Hinweis: Es wird bewusst der **erste** festgestellte Verstoß ausgegeben.
+
+## Start
+- Doppelklick auf `Start_Kuehlkette.bat`
+- Ausgabe: pro Transport-ID „OK/FAIL + eindeutige Begründung“
+- Hinweis: Es wird jeweils der **erste** festgestellte Verstoß gemeldet.
