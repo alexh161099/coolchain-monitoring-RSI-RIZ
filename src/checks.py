@@ -1,61 +1,70 @@
 """
-Prüffunktionen gemäß Aufgabenblatt:
+Drei Prüffunktionen gemäß Aufgabenblatt:
 1) Stimmigkeit je Station (in/out-Reihenfolge)
 2) Übergaben ohne Kühlung: out -> nächstes in ≤ 10 Minuten
 3) Gesamttransportdauer ≤ 48 Stunden
 """
+
 from datetime import timedelta
+import math
+
 
 def check_stimmigkeit(rows):
     """
-    Prüft pro Station die sinnvolle Reihenfolge 'in' -> 'out'.
+    rows: Liste von Tupeln (station_id, direction, dt)
+    Prüft pro Station die korrekte Reihenfolge: immer 'in' gefolgt von 'out'.
+    'in' am Ende (Transport noch nicht abgeschlossen) ist erlaubt.
     Rückgabe: (ok: bool, meldung: str)
     """
-    station_events = {}
-    for (company, tid, station, category, direction, dt) in rows:
-        station_events.setdefault(station, []).append((direction, dt))
+    per_station = {}
+    for station_id, direction, dt in rows:
+        per_station.setdefault(station_id, []).append((direction, dt))
 
-    for station, events in station_events.items():
-        last_dir = None
-        for direction, _dt in events:
+    for station_id, events in per_station.items():
+        last = None
+        for direction, _ in events:
             if direction not in ("in", "out"):
-                return (False, f"Unbekannte Richtung '{direction}' bei {station}.")
-            if last_dir is None and direction != "in":
-                return (False, f"Erster Eintrag bei {station} ist nicht 'in'.")
-            if last_dir == direction:
-                return (False, f"Doppelte Richtung '{direction}' nacheinander bei {station}.")
-            last_dir = direction
-        # Hinweis: wenn der letzte Eintrag 'in' ist (Transport noch nicht ausgecheckt),
-        # ist das laut Aufgabenblatt kein Fehler.
+                return (False, f"Unbekannte Richtung '{direction}' bei Station {station_id}.")
+            if last is None and direction != "in":
+                return (False, f"Erster Eintrag bei Station {station_id} ist nicht 'in'.")
+            if last == direction:
+                return (False, f"Doppelte Richtung '{direction}' nacheinander bei Station {station_id}.")
+            last = direction
+        # Hinweis: endet eine Station mit 'in', ist das zulässig (Transport evtl. noch offen).
 
     return (True, "Stimmigkeit ok.")
 
+
 def check_uebergabe(rows):
     """
-    Prüft, dass zwischen 'out' und nächstem 'in' höchstens 10 Minuten liegen.
+    Prüft, dass zwischen einem 'out' und dem darauffolgenden 'in'
+    höchstens 10 Minuten liegen.
     Rückgabe: (ok: bool, meldung: str)
     """
-    prev_out_time = None
-    for (_c, _tid, _station, _cat, direction, dt) in rows:
+    prev_out = None
+    for _station_id, direction, dt in rows:
         if direction == "out":
-            prev_out_time = dt
-        elif direction == "in" and prev_out_time is not None:
-            delta = dt - prev_out_time
+            prev_out = dt
+        elif direction == "in" and prev_out is not None:
+            delta = dt - prev_out
             if delta > timedelta(minutes=10):
-                return (False, f"Übergabe > 10 min: {int(delta.total_seconds() // 60)} min.")
-            prev_out_time = None
+                mins = math.ceil(delta.total_seconds() / 60.0)  # aufrunden für klare Anzeige
+                return (False, f"Übergabe > 10 min: {mins} min.")
+            prev_out = None
     return (True, "Übergaben ≤ 10 min.")
+
 
 def check_transportdauer(rows):
     """
-    Prüft, dass die gesamte Transportdauer ≤ 48 Stunden ist.
+    Prüft, dass die Gesamttransportdauer ≤ 48 h ist.
     Rückgabe: (ok: bool, meldung: str)
     """
     if not rows:
         return (False, "Keine Einträge vorhanden.")
-    start = rows[0][-1]   # erstes datetime
-    ende  = rows[-1][-1]  # letztes datetime
+    start = rows[0][2]
+    ende = rows[-1][2]
     delta = ende - start
     if delta > timedelta(hours=48):
-        return (False, f"Transportdauer > 48h: ~{int(delta.total_seconds() // 3600)} h.")
+        stunden = math.ceil(delta.total_seconds() / 3600.0)
+        return (False, f"Transportdauer > 48h: ~{stunden} h.")
     return (True, "Transportdauer ≤ 48h.")

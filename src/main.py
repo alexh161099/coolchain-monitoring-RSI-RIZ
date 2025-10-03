@@ -1,14 +1,15 @@
 """
 Hauptprogramm Kühlkettenüberwachung (Minimalversion).
-
-- Liest Daten aus dbo.coolchain für die vorgegebenen 20 Transport-IDs
-- Prüft Stimmigkeit, Übergaben und Transportdauer
-- Gibt pro ID ein klares Ergebnis mit evtl. Fehlerbeschreibung aus
+- Liest Daten aus dbo.coolchain (per SQL)  :contentReference[oaicite:7]{index=7}
+- Prüft: Stimmigkeit, Übergaben ≤ 10 min, Transportdauer ≤ 48 h  :contentReference[oaicite:8]{index=8}
+- Gibt pro Transport-ID ein klares Ergebnis aus.
 """
-from db import load_records
-from checks import check_stimmigkeit, check_uebergabe, check_transportdauer
 
-COMPANY = "Food Solution Hildesheim"
+from db import load_records
+import checks
+
+# Company-ID für "Food Solution Hildesheim" (siehe Tests an deiner DB).
+COMPANY_ID = 1703
 
 TRANSPORT_IDS = [
     "72359278599178561029675",
@@ -31,17 +32,18 @@ TRANSPORT_IDS = [
     "95662334024905944384522",
     "13456783852887496020345",
     "76381745965049879836902",
-]
+]  # IDs wie im Aufgabenblatt. :contentReference[oaicite:9]{index=9}
 
 def evaluate_one(tid: str):
     """Lädt Daten, führt 3 Checks aus und gibt (ok, meldung) zurück."""
-    rows = load_records(COMPANY, tid)
+    rows = load_records(COMPANY_ID, tid)  # (station_id, direction, datetime)
     if not rows:
+        # Entspricht ID 17 im Aufgabenblatt: "Es gibt gar keinen Eintrag". :contentReference[oaicite:10]{index=10}
         return (False, "Keine Einträge zur Transport-ID gefunden.")
 
-    ok1, msg1 = check_stimmigkeit(rows)
-    ok2, msg2 = check_uebergabe(rows)
-    ok3, msg3 = check_transportdauer(rows)
+    ok1, msg1 = checks.check_stimmigkeit(rows)
+    ok2, msg2 = checks.check_uebergabe(rows)
+    ok3, msg3 = checks.check_transportdauer(rows)
 
     if ok1 and ok2 and ok3:
         return (True, "Kühlkette eingehalten (alle 3 Kriterien ok).")
