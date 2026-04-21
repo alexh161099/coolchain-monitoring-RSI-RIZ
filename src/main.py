@@ -8,6 +8,10 @@ Hauptprogramm Kühlkettenüberwachung (Minimalversion).
 from db import load_records
 import checks
 
+# NEU:
+from Temperature import check_temperature_data, print_temperature_report
+from CryptoUtil import load_decrypted_companies, print_company_report
+
 # Company-ID für "Food Solution Hildesheim" (siehe Tests an deiner DB).
 COMPANY_ID = 1703
 
@@ -54,11 +58,31 @@ def evaluate_one(tid: str):
     return (False, f"Transportdauer: {msg3}")
 
 def main():
-    print("\n=== Kühlkettenüberwachung (Minimal) ===\n")
+    print("\n=== Kühlkettenüberwachung Phase 2 ===\n")
+
+    # --- Phase 1 (bestehende Logik) ---
     for tid in TRANSPORT_IDS:
         ok, msg = evaluate_one(tid)
         status = "OK " if ok else "FAIL"
         print(f"{status}  ID {tid}: {msg}")
+
+    # --- NEU: Phase 2 Erweiterungen ---
+    print("\n--- Phase 2 Erweiterungen ---")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # 1. Temperaturüberwachung
+    temp_violations = check_temperature_data(cursor)
+    print_temperature_report(temp_violations)
+
+    # 2. Entschlüsselte Firmendaten
+    companies = load_decrypted_companies(cursor)
+    print_company_report(companies[:3])  # erstmal nur paar anzeigen
+
+    cursor.close()
+    conn.close()
+
     print("\nFertig.\n")
 
 if __name__ == "__main__":
