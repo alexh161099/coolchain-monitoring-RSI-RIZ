@@ -1,24 +1,12 @@
 """
-Temperaturüberwachung für Phase 2.
-
-Prüft Temperaturdaten aus der Tabelle tempdata.
-Laut Aufgabenstellung müssen die Temperaturen zwischen +2 °C und +4 °C liegen.
+Temperaturüberwachung für Projektphase 2.
+Prüft, ob die Temperaturen der Kühlstationen im Bereich +2 °C bis +4 °C liegen.
 """
+
 
 def check_temperature_data(cursor):
     """
-    Liest alle Temperaturdaten aus tempdata und gibt Verstöße zurück.
-
-    Rückgabe:
-        Liste mit Dictionaries:
-        [
-            {
-                "station_id": 12,
-                "datetime": datetime_obj,
-                "temperature": 5.2,
-                "message": "Temperatur außerhalb des erlaubten Bereichs"
-            }
-        ]
+    Liest Temperaturdaten aus dbo.tempdata und gibt alle Grenzwertverstöße zurück.
     """
     query = """
         SELECT transportstationID, [datetime], temperature
@@ -34,22 +22,24 @@ def check_temperature_data(cursor):
     for row in rows:
         station_id = row[0]
         dt = row[1]
-        temp = row[2]
+        temperature = row[2]
 
-        if temp < 2 or temp > 4:
-            violations.append({
-                "station_id": station_id,
-                "datetime": dt,
-                "temperature": temp,
-                "message": "Temperatur außerhalb des erlaubten Bereichs"
-            })
+        if temperature < 2 or temperature > 4:
+            violations.append(
+                {
+                    "station_id": station_id,
+                    "datetime": dt,
+                    "temperature": temperature,
+                    "message": "Temperatur außerhalb des erlaubten Bereichs",
+                }
+            )
 
     return violations
 
 
 def print_temperature_report(violations):
     """
-    Gibt einen einfachen Bericht zu Temperaturverstößen aus.
+    Gibt die gefundenen Temperaturverstöße übersichtlich aus.
     """
     print("\n=== Temperaturüberwachung ===")
 
@@ -58,10 +48,11 @@ def print_temperature_report(violations):
         return
 
     print(f"FAIL: {len(violations)} Temperaturverstöße gefunden:")
-    for v in violations:
+
+    for violation in violations:
         print(
-            f"Station {v['station_id']} | "
-            f"Zeit: {v['datetime']} | "
-            f"Temperatur: {v['temperature']} °C | "
-            f"{v['message']}"
+            f"Station {violation['station_id']} | "
+            f"Zeit: {violation['datetime']} | "
+            f"Temperatur: {violation['temperature']} °C | "
+            f"{violation['message']}"
         )

@@ -3,8 +3,6 @@ import checks
 
 from temperature import check_temperature_data, print_temperature_report
 from crypto_utils import load_decrypted_companies, print_company_report
-
-# 🔥 HIER GEÄNDERT
 from weather import get_weather_for_plz
 
 
@@ -41,7 +39,7 @@ def get_datetime_from_row(row):
         return row[2]
 
 
-def evaluate_one(tid: str):
+def evaluate_one(tid):
     try:
         rows = load_records(COMPANY_ID, tid)
     except Exception as error:
@@ -58,21 +56,16 @@ def evaluate_one(tid: str):
 
     if not ok2:
         try:
-            last_entry = rows[-1]
-            datetime_value = get_datetime_from_row(last_entry)
+            datetime_value = get_datetime_from_row(rows[-1])
+            plz = "30159"
+            temp = get_weather_for_plz(plz, datetime_value)
 
-            plz = "30159"  # fallback
-
-            # 🔥 HIER GEÄNDERT
-            weather_temp = get_weather_for_plz(plz, datetime_value)
-
-            if weather_temp is not None:
-                weather_info = f" | Wetter: {weather_temp} °C"
+            if temp is not None:
+                weather_info = f" | Wetter: {temp} °C"
             else:
                 weather_info = " | Wetterdaten nicht verfügbar"
-
         except Exception:
-            weather_info = " | Wetterfehler"
+            weather_info = " | Wetterdaten nicht verfügbar"
 
     if ok1 and ok2 and ok3:
         return True, "Kühlkette eingehalten."
@@ -81,10 +74,8 @@ def evaluate_one(tid: str):
 
     if not ok1:
         errors.append(f"Stimmigkeit: {msg1}")
-
     if not ok2:
         errors.append(f"Übergabe: {msg2}{weather_info}")
-
     if not ok3:
         errors.append(f"Transportdauer: {msg3}")
 
@@ -103,6 +94,9 @@ def run_phase_1_checks():
 def run_phase_2_checks():
     print("\n=== Erweiterungen Projektphase 2 ===\n")
 
+    conn = None
+    cursor = None
+
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -115,12 +109,15 @@ def run_phase_2_checks():
         companies = load_decrypted_companies(cursor)
         print_company_report(companies[:3])
 
-        cursor.close()
-        conn.close()
-
     except Exception as error:
         print("\nFehler bei Phase 2:")
         print(error)
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 def main():
