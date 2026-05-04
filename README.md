@@ -1,33 +1,65 @@
-# coolchain-monitoring-RSI-RIZ
-Der Hersteller „Food Solution Hildesheim“ produziert Bio-Dönerspieße. Er bietet seinen Endkunden eine zertifizierte Kühlkette für alle Produkte an. Die Einhaltung der Kühlkette kann vom Endkunden leicht über einen QR-Code überprüft werden. 
-# Kühlkettenüberwachung
+coolchain-monitoring-RSI
 
-Dieses Programm prüft für vorgegebene Transport-IDs drei Kriterien:
-1) Stimmigkeit je Station (Reihenfolge in → out)
-2) Übergaben ohne Kühlung ≤ 10 Minuten
-3) Gesamttransportdauer ≤ 48 Stunden
+Der Hersteller „Food Solution Hildesheim“ produziert Bio-Dönerspieße und bietet seinen Endkunden eine zertifizierte Kühlkette an.
+Die Einhaltung der Kühlkette kann über einen QR-Code überprüft werden.
 
-## Voraussetzungen
-- Windows, Python 3.12
-- Microsoft ODBC Driver 18 for SQL Server (oder 17)
-- Python-Paket: pyodbc
+Kühlkettenüberwachung
 
-## Verbindung (vorgegeben)
-Server: sc-db-server.database.windows.net  
-Datenbank: supplychain  
-Benutzer: rse / Passwort: Pa$$w0rd  
-Company-ID: 1703
+Dieses Python-Programm überprüft für vorgegebene Transport-IDs die Einhaltung der Kühlkette.
 
-## Verwendung
-- In `src/main.py` COMPANY_ID anpassen (z. B. 1703).  
-- `src/main.py` starten (VS Code ►).
-- Ausgabe: Für jede Transport-ID „OK“ oder „FAIL“ mit Begründung.
-- Hinweis: Es wird bewusst der **erste** festgestellte Verstoß ausgegeben.
+Projektphase 1
 
-## Start
-- Doppelklick auf `Start_Kuehlkette.bat`
-- Ausgabe: pro Transport-ID „OK/FAIL + eindeutige Begründung“
-- Hinweis: Es wird jeweils der **erste** festgestellte Verstoß gemeldet.
+Das Programm prüft folgende drei Kriterien:
 
-## Dokumentation
-Die automatisch erzeugte HTML-Dokumentation liegt unter `docs/html/index.html`.
+Stimmigkeit je Station
+Jede Station muss ein Ein- und Auschecken besitzen
+Reihenfolge: in → out
+Übergaben ohne Kühlung
+Maximal 10 Minuten zwischen zwei Stationen
+Gesamttransportdauer
+Maximal 48 Stunden
+
+Projektphase 2 (Erweiterung)
+
+Das Programm wurde um folgende Funktionen erweitert:
+
+Temperaturüberwachung
+Auswertung der Tabelle tempdata
+Gültiger Temperaturbereich: +2 °C bis +4 °C
+Ausgabe von Temperaturabweichungen
+
+Entschlüsselung der Daten
+
+Verarbeitung der verschlüsselten Tabellen:
+company_crypt
+transportstation_crypt
+Verschlüsselung: AES (CBC Mode)
+
+Wetterdaten bei Übergabefehlern
+Bei Überschreitung der Übergabezeit wird die Außentemperatur abgefragt
+Datenquelle: Visual Crossing API
+Ausgabe direkt in der Fehlermeldung
+
+Voraussetzungen
+Windows
+Python 3.12
+Microsoft ODBC Driver 17 oder 18 für SQL Server
+
+Verwendung
+In src/main.py die Company-ID prüfen/anpassen
+Programm starten:
+python src/main.py
+
+Ausgabe:
+Für jede Transport-ID: OK / FAIL
+Bei Fehlern: klare Begründung
+Bei Übergabefehlern: zusätzliche Wetterinformation
+
+Start
+Doppelklick auf Start_Kuehlkette.bat
+oder
+Start über VS Code / Terminal
+
+Beispielausgabe
+OK   ID 72359278599178561029675: Kühlkette eingehalten
+FAIL ID 15668407856331648336231: Übergabe: > 10 min | Wetter: 6 °C

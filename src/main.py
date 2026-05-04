@@ -1,17 +1,11 @@
-"""
-Hauptprogramm Kühlkettenüberwachung Phase 2
-
-Erweiterungen:
-- Temperaturüberwachung der Kühlstationen
-- Entschlüsselte Firmendaten
-- Vorbereitung für Wetterdaten bei Übergabezeitüberschreitung
-"""
-
 from db import load_records, get_connection
 import checks
 
 from temperature import check_temperature_data, print_temperature_report
 from crypto_utils import load_decrypted_companies, print_company_report
+
+# 🔥 HIER GEÄNDERT
+from weather import get_weather_for_plz
 
 
 COMPANY_ID = 1703
@@ -40,11 +34,18 @@ TRANSPORT_IDS = [
 ]
 
 
+def get_datetime_from_row(row):
+    try:
+        return row.datetime
+    except AttributeError:
+        return row[2]
+
+
 def evaluate_one(tid: str):
-    """
-    Prüft eine Transport-ID mit den drei Kriterien aus Phase 1.
-    """
-    rows = load_records(COMPANY_ID, tid)
+    try:
+        rows = load_records(COMPANY_ID, tid)
+    except Exception as error:
+        return False, f"Datenbankfehler: {error}"
 
     if not rows:
         return False, "Keine Einträge zur Transport-ID gefunden."
@@ -52,6 +53,26 @@ def evaluate_one(tid: str):
     ok1, msg1 = checks.check_stimmigkeit(rows)
     ok2, msg2 = checks.check_uebergabe(rows)
     ok3, msg3 = checks.check_transportdauer(rows)
+
+    weather_info = ""
+
+    if not ok2:
+        try:
+            last_entry = rows[-1]
+            datetime_value = get_datetime_from_row(last_entry)
+
+            plz = "30159"  # fallback
+
+            # 🔥 HIER GEÄNDERT
+            weather_temp = get_weather_for_plz(plz, datetime_value)
+
+            if weather_temp is not None:
+                weather_info = f" | Wetter: {weather_temp} °C"
+            else:
+                weather_info = " | Wetterdaten nicht verfügbar"
+
+        except Exception:
+            weather_info = " | Wetterfehler"
 
     if ok1 and ok2 and ok3:
         return True, "Kühlkette eingehalten."
@@ -62,7 +83,7 @@ def evaluate_one(tid: str):
         errors.append(f"Stimmigkeit: {msg1}")
 
     if not ok2:
-        errors.append(f"Übergabe: {msg2}")
+        errors.append(f"Übergabe: {msg2}{weather_info}")
 
     if not ok3:
         errors.append(f"Transportdauer: {msg3}")
@@ -71,9 +92,6 @@ def evaluate_one(tid: str):
 
 
 def run_phase_1_checks():
-    """
-    Führt die bestehenden Prüfungen aus Projektphase 1 aus.
-    """
     print("\n=== Prüfung Projektphase 1 ===\n")
 
     for tid in TRANSPORT_IDS:
@@ -83,13 +101,7 @@ def run_phase_1_checks():
 
 
 def run_phase_2_checks():
-    """
-    Führt die neuen Erweiterungen aus Projektphase 2 aus.
-    """
     print("\n=== Erweiterungen Projektphase 2 ===\n")
-
-    conn = None
-    cursor = None
 
     try:
         conn = get_connection()
@@ -103,18 +115,12 @@ def run_phase_2_checks():
         companies = load_decrypted_companies(cursor)
         print_company_report(companies[:3])
 
-        print("\n--- Wetterdaten ---")
-        print("Wetterdaten werden bei Übergabezeitüberschreitungen über die Datei weather.py vorbereitet.")
+        cursor.close()
+        conn.close()
 
     except Exception as error:
-        print("\nFehler bei den Phase-2-Erweiterungen:")
+        print("\nFehler bei Phase 2:")
         print(error)
-
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 
 def main():
