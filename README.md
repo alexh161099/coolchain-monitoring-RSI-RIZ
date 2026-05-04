@@ -30,7 +30,7 @@ Das Programm prüft folgende Kriterien:
 
 ---
 
-## 🔹 Projektphase 2 (Erweiterung)
+## Projektphase 2 (Erweiterung)
 
 ### Temperaturüberwachung
 
