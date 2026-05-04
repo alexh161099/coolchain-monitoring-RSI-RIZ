@@ -1,18 +1,19 @@
 """
-Hauptprogramm Kühlkettenüberwachung Phase 2: Erweiterung um Temperaturüberwachung und entschlüsselte Firmendaten.
-- Liest Daten aus dbo.coolchain (per SQL)  :contentReference[oaicite:7]{index=7}
-- Prüft: Stimmigkeit, Übergaben ≤ 10 min, Transportdauer ≤ 48 h  :contentReference[oaicite:8]{index=8}
-- Gibt pro Transport-ID ein klares Ergebnis aus.
+Hauptprogramm Kühlkettenüberwachung Phase 2
+
+Erweiterung um:
+- Temperaturüberwachung
+- Entschlüsselte Firmendaten
 """
 
-from db import load_records
+from db import load_records, get_connection
 import checks
 
-# NEU:
-from Temperature import check_temperature_data, print_temperature_report
-from CryptoUtil import load_decrypted_companies, print_company_report
+# Phase 2 Imports (klein geschrieben!)
+from temperature import check_temperature_data, print_temperature_report
+from crypto_utils import load_decrypted_companies, print_company_report
 
-# Company-ID für "Food Solution Hildesheim" (siehe Tests an deiner DB).
+
 COMPANY_ID = 1703
 
 TRANSPORT_IDS = [
@@ -36,54 +37,60 @@ TRANSPORT_IDS = [
     "95662334024905944384522",
     "13456783852887496020345",
     "76381745965049879836902",
-]  # IDs wie im Aufgabenblatt. :contentReference[oaicite:9]{index=9}
+]
+
 
 def evaluate_one(tid: str):
-    """Lädt Daten, führt 3 Checks aus und gibt (ok, meldung) zurück."""
-    rows = load_records(COMPANY_ID, tid)  # (station_id, direction, datetime)
+    rows = load_records(COMPANY_ID, tid)
+
     if not rows:
-        # Entspricht ID 17 im Aufgabenblatt: "Es gibt gar keinen Eintrag". :contentReference[oaicite:10]{index=10}
-        return (False, "Keine Einträge zur Transport-ID gefunden.")
+        return False, "Keine Einträge zur Transport-ID gefunden."
 
     ok1, msg1 = checks.check_stimmigkeit(rows)
     ok2, msg2 = checks.check_uebergabe(rows)
     ok3, msg3 = checks.check_transportdauer(rows)
 
     if ok1 and ok2 and ok3:
-        return (True, "Kühlkette eingehalten (alle 3 Kriterien ok).")
+        return True, "Kühlkette eingehalten."
+
     if not ok1:
-        return (False, f"Stimmigkeit: {msg1}")
+        return False, f"Stimmigkeit: {msg1}"
     if not ok2:
-        return (False, f"Übergabe: {msg2}")
-    return (False, f"Transportdauer: {msg3}")
+        return False, f"Übergabe: {msg2}"
+
+    return False, f"Transportdauer: {msg3}"
+
 
 def main():
     print("\n=== Kühlkettenüberwachung Phase 2 ===\n")
 
-    # --- Phase 1 (bestehende Logik) ---
+    # Phase 1
     for tid in TRANSPORT_IDS:
         ok, msg = evaluate_one(tid)
         status = "OK " if ok else "FAIL"
-        print(f"{status}  ID {tid}: {msg}")
+        print(f"{status} ID {tid}: {msg}")
 
-    # --- NEU: Phase 2 Erweiterungen ---
+    # Phase 2
     print("\n--- Phase 2 Erweiterungen ---")
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    # 1. Temperaturüberwachung
+    # Temperatur
+    print("\n--- Temperaturüberwachung ---")
     temp_violations = check_temperature_data(cursor)
     print_temperature_report(temp_violations)
 
-    # 2. Entschlüsselte Firmendaten
+    # Entschlüsselung
+    print("\n--- Entschlüsselte Firmendaten ---")
     companies = load_decrypted_companies(cursor)
-    print_company_report(companies[:3])  # erstmal nur paar anzeigen
+    print_company_report(companies[:3])
 
     cursor.close()
     conn.close()
 
     print("\nFertig.\n")
+
 
 if __name__ == "__main__":
     main()
