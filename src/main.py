@@ -1,5 +1,5 @@
 """
-Hauptprogramm Kühlkettenüberwachung (Minimalversion).
+Hauptprogramm Kühlkettenüberwachung 
 - Liest Daten aus dbo.coolchain (per SQL)  :contentReference[oaicite:7]{index=7}
 - Prüft: Stimmigkeit, Übergaben ≤ 10 min, Transportdauer ≤ 48 h  :contentReference[oaicite:8]{index=8}
 - Gibt pro Transport-ID ein klares Ergebnis aus.
