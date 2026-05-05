@@ -6,7 +6,7 @@ Liest die Transportdaten aus der SQL-Server-Datenbank.
 import pyodbc
 
 
-SERVER = "sc-db-server.database.windows.net"
+SERVER = "sc-db-server1.database.windows.net"
 DATABASE = "supplychain"
 USERNAME = "rse"
 PASSWORD = "Pa$$w0rd"
