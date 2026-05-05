@@ -5,11 +5,15 @@
 Fragt historische Wetterdaten über die Visual-Crossing-API ab.
 """
 
+import time
 import requests
 from datetime import datetime
 
 
 API_KEY = "R8L9F6Y28G4QVPA2VP7ECQCE6"
+
+# Zwischenspeicher, damit gleiche Wetterabfragen nicht mehrfach an die API gehen
+weather_cache = {}
 
 
 def round_to_full_hour(dt_obj):
@@ -33,7 +37,7 @@ def get_weather_for_plz(plz, dt_value):
     if not plz or str(plz) == "0":
         return None
 
-    if API_KEY == "DEIN_API_KEY_HIER_EINFUEGEN":
+    if API_KEY == "DEIN_API_KEY_HIER_EINFUEGEN" or not API_KEY:
         return None
 
     try:
@@ -43,6 +47,12 @@ def get_weather_for_plz(plz, dt_value):
             dt_obj = dt_value
 
         dt_obj = round_to_full_hour(dt_obj)
+
+        cache_key = f"{plz}_{dt_obj.strftime('%Y-%m-%dT%H:%M:%S')}"
+
+        if cache_key in weather_cache:
+            return weather_cache[cache_key]
+
         timestamp = dt_obj.strftime("%Y-%m-%dT%H:%M:%S")
         location = f"{plz},DE"
 
@@ -50,6 +60,9 @@ def get_weather_for_plz(plz, dt_value):
             "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/"
             f"timeline/{location}/{timestamp}"
         )
+
+        # kleine Pause gegen zu viele direkte Anfragen
+        time.sleep(1)
 
         response = requests.get(
             url,
@@ -64,7 +77,19 @@ def get_weather_for_plz(plz, dt_value):
         response.raise_for_status()
         data = response.json()
 
-        return data["days"][0]["temp"]
+        temp = data["days"][0]["temp"]
+
+        weather_cache[cache_key] = temp
+
+        return temp
+
+    except requests.exceptions.HTTPError as error:
+        if error.response is not None and error.response.status_code == 429:
+            print("Wetter-API Limit erreicht. Bitte später erneut versuchen.")
+        else:
+            print(f"Wetterdaten konnten für PLZ {plz} nicht geladen werden.")
+        return None
 
     except Exception:
+        print(f"Wetterdaten konnten für PLZ {plz} nicht geladen werden.")
         return None
