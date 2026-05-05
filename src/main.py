@@ -120,16 +120,31 @@ def run_phase_2_checks():
             conn.close()
 
 
-def main():
-    print("\n===================================")
-    print(" IoT-Kühlkettenüberwachung Phase 2")
-    print("===================================")
+def show_menu():
+    while True:
+        print("\n===================================")
+        print(" IoT-Kühlkettenüberwachung Phase 2")
+        print("===================================")
+        print("1 - Projektphase 1 prüfen")
+        print("2 - Projektphase 2 Erweiterungen prüfen")
+        print("3 - Alles ausführen")
+        print("0 - Programm beenden")
 
-    run_phase_1_checks()
-    run_phase_2_checks()
+        choice = input("\nAuswahl eingeben: ")
 
-    print("\nProgramm beendet.\n")
+        if choice == "1":
+            run_phase_1_checks()
+        elif choice == "2":
+            run_phase_2_checks()
+        elif choice == "3":
+            run_phase_1_checks()
+            run_phase_2_checks()
+        elif choice == "0":
+            print("\nProgramm beendet.\n")
+            break
+        else:
+            print("\nUngültige Eingabe. Bitte erneut versuchen.")
 
 
 if __name__ == "__main__":
-    main()
+    show_menu()
