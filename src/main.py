@@ -246,12 +246,22 @@ class CoolchainApp(tk.Tk):
         self.title("Kühlketten-Monitoring Übersicht")
         self.geometry("900x650")
         self.minsize(860, 620)
-        self.configure(bg="#f2f5fb")
+        self.configure(bg="#e7eef9")
 
         style = ttk.Style(self)
-        style.configure("Header.TLabel", font=("Segoe UI", 14, "bold"), background="#f2f5fb")
-        style.configure("TLabel", background="#f2f5fb")
-        style.configure("TButton", padding=6)
+        style.theme_use("clam")
+        style.configure("TFrame", background="#e7eef9")
+        style.configure("Header.TLabel", font=("Segoe UI", 16, "bold"), background="#e7eef9", foreground="#1f385b")
+        style.configure("SubHeader.TLabel", font=("Segoe UI", 10), background="#e7eef9", foreground="#394c74")
+        style.configure("Info.TLabel", font=("Segoe UI", 9), background="#e7eef9", foreground="#4d5e7c")
+        style.configure("TLabel", background="#e7eef9", foreground="#222222")
+        style.configure("Accent.TButton", font=("Segoe UI", 10, "bold"), background="#3e7ecb", foreground="#ffffff", padding=8)
+        style.map(
+            "Accent.TButton",
+            background=[("active", "#356bb1"), ("disabled", "#a8badf")],
+            foreground=[("disabled", "#f0f0f0")],
+        )
+        style.configure("TSeparator", background="#c0d0e5")
 
         self._task_thread = None
         self._task_result = ""
@@ -279,6 +289,7 @@ class CoolchainApp(tk.Tk):
                 "Projektphase 1: Stimmigkeit, Übergabe, Transportdauer prüfen. "
                 "Projektphase 2: Temperaturüberwachung und entschlüsselte Firmendaten."
             ),
+            style="SubHeader.TLabel",
             wraplength=820,
             justify="left",
         )
@@ -298,30 +309,34 @@ class CoolchainApp(tk.Tk):
             controls_frame,
             text="Phase 1 prüfen",
             command=self.on_run_phase_1,
+            style="Accent.TButton",
         ).grid(row=0, column=2, padx=10, pady=4)
 
         ttk.Button(
             controls_frame,
             text="Phase 2 prüfen",
             command=self.on_run_phase_2,
+            style="Accent.TButton",
         ).grid(row=0, column=3, padx=10, pady=4)
 
         ttk.Button(
             controls_frame,
             text="Alle prüfen",
             command=self.on_run_all,
+            style="Accent.TButton",
         ).grid(row=0, column=4, padx=10, pady=4)
 
         ttk.Button(
             controls_frame,
             text="Nur diese ID prüfen",
             command=self.on_run_single_id,
+            style="Accent.TButton",
         ).grid(row=0, column=5, padx=10, pady=4)
 
         info_label = ttk.Label(
             controls_frame,
             text=f"Firma ID: {COMPANY_ID} | Anzahl Standard-Transport-IDs: {len(TRANSPORT_IDS)}",
-            foreground="#444444",
+            style="Info.TLabel",
         )
         info_label.grid(row=1, column=0, columnspan=6, sticky="w", pady=(10, 0))
 
@@ -339,8 +354,9 @@ class CoolchainApp(tk.Tk):
             wrap="word",
             height=24,
             font=("Consolas", 10),
-            background="#ffffff",
+            background="#f8fbff",
             foreground="#111111",
+            insertbackground="#1f385b",
             borderwidth=1,
             relief="solid",
         )
