@@ -1,7 +1,9 @@
-"""
+
+"""""
 Datenbankzugriff für die Kühlkettenprüfung.
 Liest die Transportdaten aus der SQL-Server-Datenbank.
-"""
+""""
+
 
 import pyodbc
 
@@ -14,6 +16,11 @@ DRIVER = "ODBC Driver 18 for SQL Server"
 
 
 def get_connection():
+     """
+    @brief Erstellt eine Verbindung zur SQL-Server-Datenbank.
+
+    @return Aktive pyodbc-Datenbankverbindung.
+    """
     """Stellt eine Verbindung zur SQL-Server-Datenbank her."""
     conn_str = (
         f"DRIVER={{{DRIVER}}};"

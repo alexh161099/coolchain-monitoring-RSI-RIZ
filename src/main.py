@@ -107,6 +107,12 @@ def evaluate_one(tid):
 
 
 def run_phase_1_checks():
+    """
+    @brief Führt die Prüfungen aus Projektphase 1 aus.
+
+    Alle vorgesehenen Transport-IDs werden nacheinander geprüft und in der
+    Konsole ausgegeben.
+    """
     print("\n=== Prüfung Projektphase 1 ===\n")
 
     for tid in TRANSPORT_IDS:
@@ -116,6 +122,12 @@ def run_phase_1_checks():
 
 
 def run_phase_2_checks():
+        """
+    @brief Führt die Erweiterungen aus Projektphase 2 aus.
+
+    Dazu gehören die Temperaturüberwachung und die Ausgabe entschlüsselter
+    Firmendaten.
+    """
     print("\n=== Erweiterungen Projektphase 2 ===\n")
 
     conn = None
