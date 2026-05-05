@@ -10,7 +10,7 @@ import requests
 from datetime import datetime
 
 
-API_KEY = "R8L9F6Y28G4QVPA2VP7ECQCE6"
+API_KEY = "KLTWLCNF92PRR2VDTG4WKQ3V2"
 
 # Zwischenspeicher, damit gleiche Wetterabfragen nicht mehrfach an die API gehen
 weather_cache = {}
