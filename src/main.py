@@ -157,6 +157,12 @@ def run_phase_2_checks():
 
 
 def show_menu():
+    """
+    @brief Stellt die Konsolenbedienung bereit.
+
+    Der Benutzer kann auswählen, ob eine einzelne Prüfung, mehrere Prüfungen
+    oder die Phase-2-Erweiterungen gestartet werden sollen.
+    """
     while True:
         print("\n===================================")
         print(" IoT-Kühlkettenüberwachung Phase 2")
