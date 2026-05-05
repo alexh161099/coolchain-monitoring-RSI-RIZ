@@ -1,37 +1,39 @@
 """
-Wetterdatenabfrage für Projektphase 2.
-Fragt historische Wetterdaten bei Visual Crossing ab.
+@file weather.py
+@brief Wetterdatenabfrage für Projektphase 2.
+
+Fragt historische Wetterdaten über die Visual-Crossing-API ab.
 """
 
 import requests
 from datetime import datetime
 
 
-API_KEY = "BX729P35Z6FQ5YTBFSGE4L6PU"
+API_KEY = "R8L9F6Y28G4QVPA2VP7ECQCE6"
 
 
 def round_to_full_hour(dt_obj):
     """
-    Rundet einen Zeitpunkt auf die volle Stunde ab.
+    @brief Rundet einen Zeitpunkt auf die volle Stunde ab.
+
+    @param dt_obj Zeitpunkt als datetime-Objekt.
+    @return Gerundeter Zeitpunkt.
     """
     return dt_obj.replace(minute=0, second=0, microsecond=0)
 
 
 def get_weather_for_plz(plz, dt_value):
     """
-    Holt Wetterdaten für eine deutsche PLZ zu einem bestimmten Zeitpunkt.
+    @brief Holt Wetterdaten für eine deutsche PLZ zu einem bestimmten Zeitpunkt.
 
-    Parameter:
-        plz: Postleitzahl, z. B. "26127"
-        dt_value: datetime-Objekt oder String im Format YYYY-MM-DD HH:MM:SS
-
-    Rückgabe:
-        Temperatur in °C oder None bei Fehler.
+    @param plz Postleitzahl, z. B. "26127".
+    @param dt_value datetime-Objekt oder String im Format YYYY-MM-DD HH:MM:SS.
+    @return Temperatur in °C oder None bei Fehler.
     """
     if not plz or str(plz) == "0":
         return None
 
-    if API_KEY == "HIER_DEIN_API_KEY_EINFUEGEN":
+    if API_KEY == "DEIN_API_KEY_HIER_EINFUEGEN":
         return None
 
     try:
@@ -41,7 +43,6 @@ def get_weather_for_plz(plz, dt_value):
             dt_obj = dt_value
 
         dt_obj = round_to_full_hour(dt_obj)
-
         timestamp = dt_obj.strftime("%Y-%m-%dT%H:%M:%S")
         location = f"{plz},DE"
 
@@ -65,6 +66,5 @@ def get_weather_for_plz(plz, dt_value):
 
         return data["days"][0]["temp"]
 
-    except Exception as error:
-        print(f"Fehler bei Wetterabfrage für {plz}: {error}")
+    except Exception:
         return None
