@@ -59,3 +59,38 @@ def load_records(company_id, transport_id):
         cursor = conn.cursor()
         cursor.execute(query, company_id, transport_id)
         return cursor.fetchall()
+    
+def load_station_plz(station_id):
+    """
+    Lädt die Postleitzahl einer Transportstation.
+    """
+    query = """
+        SELECT plz
+        FROM dbo.transportstation
+        WHERE transportstationID = ?
+    """
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, station_id)
+        row = cursor.fetchone()
+
+        if row is None:
+            return None
+
+        return str(row[0])
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, station_id)
+        row = cursor.fetchone()
+
+        if row is None:
+            return None
+
+        plz = row[0]
+
+        if plz is None or str(plz) == "0":
+            return None
+
+        return str(plz)
