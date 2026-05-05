@@ -11,7 +11,7 @@ aus Projektphase 1 mit den Erweiterungen aus Projektphase 2.
 @author Fynn Bremer, Alexander Holzenkamp, Tom Stoelken
 """
 
-from db import load_records, get_connection
+from db import load_records, get_connection, load_station_plz
 import checks
 from temperature import check_temperature_data, print_temperature_report
 from crypto_utils import load_decrypted_companies, print_company_report
@@ -55,7 +55,18 @@ def get_datetime_from_row(row):
         return row.datetime
     except AttributeError:
         return row[2]
+    
+def get_station_id_from_row(row):
+    """
+    @brief Ermittelt die Transportstations-ID aus einem Datenbankdatensatz.
 
+    @param row Datensatz aus der Datenbank.
+    @return Transportstations-ID.
+    """
+    try:
+        return row.station_id
+    except AttributeError:
+        return row[0]
 
 def evaluate_one(tid):
     """
@@ -81,7 +92,9 @@ def evaluate_one(tid):
     if not ok2:
         try:
             datetime_value = get_datetime_from_row(rows[-1])
-            plz = "30159"
+            station_id = get_station_id_from_row(rows[-1])
+            plz = load_station_plz(station_id)
+
             temp = get_weather_for_plz(plz, datetime_value)
 
             if temp is not None:

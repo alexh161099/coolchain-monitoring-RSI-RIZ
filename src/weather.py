@@ -7,7 +7,7 @@ import requests
 from datetime import datetime
 
 
-API_KEY = "HIER_DEIN_API_KEY_EINFUEGEN"
+API_KEY = "BX729P35Z6FQ5YTBFSGE4L6PU"
 
 
 def round_to_full_hour(dt_obj):
