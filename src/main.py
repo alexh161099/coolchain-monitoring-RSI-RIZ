@@ -19,6 +19,13 @@ from temperature import check_temperature_data, print_temperature_report
 from crypto_utils import load_decrypted_companies, print_company_report
 from weather import get_weather_for_plz
 
+import contextlib
+import io
+import threading
+import traceback
+import tkinter as tk
+from tkinter import ttk, scrolledtext
+
 
 COMPANY_ID = 1703
 
@@ -209,5 +216,247 @@ def show_menu():
             print("\nUngültige Eingabe. Bitte erneut versuchen.")
 
 
+def capture_output(func, *args, **kwargs):
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        func(*args, **kwargs)
+    return buffer.getvalue()
+
+
+def run_phase_1_checks_text(tid_list=None):
+    if tid_list is None:
+        tid_list = TRANSPORT_IDS
+
+    lines = ["=== Prüfung Projektphase 1 ==="]
+    for tid in tid_list:
+        ok, msg = evaluate_one(tid)
+        status = "OK" if ok else "FAIL"
+        lines.append(f"{status} | ID {tid} | {msg}")
+
+    return "\n".join(lines)
+
+
+def run_phase_2_checks_text():
+    return capture_output(run_phase_2_checks)
+
+
+class CoolchainApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Kühlketten-Monitoring Übersicht")
+        self.geometry("900x650")
+        self.minsize(860, 620)
+        self.configure(bg="#f2f5fb")
+
+        style = ttk.Style(self)
+        style.configure("Header.TLabel", font=("Segoe UI", 14, "bold"), background="#f2f5fb")
+        style.configure("TLabel", background="#f2f5fb")
+        style.configure("TButton", padding=6)
+
+        self._task_thread = None
+        self._task_result = ""
+        self._task_error = None
+
+        self._build_header()
+        self._build_controls()
+        self._build_output_area()
+        self._build_status_bar()
+
+    def _build_header(self):
+        header_frame = ttk.Frame(self, padding=(20, 12, 20, 6))
+        header_frame.pack(fill="x")
+
+        title = ttk.Label(
+            header_frame,
+            text="IoT-Kühlkettenüberwachung",
+            style="Header.TLabel",
+        )
+        title.pack(anchor="w")
+
+        subtitle = ttk.Label(
+            header_frame,
+            text=(
+                "Projektphase 1: Stimmigkeit, Übergabe, Transportdauer prüfen. "
+                "Projektphase 2: Temperaturüberwachung und entschlüsselte Firmendaten."
+            ),
+            wraplength=820,
+            justify="left",
+        )
+        subtitle.pack(anchor="w", pady=(6, 0))
+
+    def _build_controls(self):
+        controls_frame = ttk.Frame(self, padding=(20, 10, 20, 10))
+        controls_frame.pack(fill="x")
+
+        id_label = ttk.Label(controls_frame, text="Transport-ID (optional):")
+        id_label.grid(row=0, column=0, sticky="w")
+
+        self.transport_id_entry = ttk.Entry(controls_frame, width=42)
+        self.transport_id_entry.grid(row=0, column=1, sticky="w", padx=(10, 0))
+
+        ttk.Button(
+            controls_frame,
+            text="Phase 1 prüfen",
+            command=self.on_run_phase_1,
+        ).grid(row=0, column=2, padx=10, pady=4)
+
+        ttk.Button(
+            controls_frame,
+            text="Phase 2 prüfen",
+            command=self.on_run_phase_2,
+        ).grid(row=0, column=3, padx=10, pady=4)
+
+        ttk.Button(
+            controls_frame,
+            text="Alle prüfen",
+            command=self.on_run_all,
+        ).grid(row=0, column=4, padx=10, pady=4)
+
+        ttk.Button(
+            controls_frame,
+            text="Nur diese ID prüfen",
+            command=self.on_run_single_id,
+        ).grid(row=0, column=5, padx=10, pady=4)
+
+        info_label = ttk.Label(
+            controls_frame,
+            text=f"Firma ID: {COMPANY_ID} | Anzahl Standard-Transport-IDs: {len(TRANSPORT_IDS)}",
+            foreground="#444444",
+        )
+        info_label.grid(row=1, column=0, columnspan=6, sticky="w", pady=(10, 0))
+
+        ttk.Separator(self, orient="horizontal").pack(fill="x", padx=20, pady=(0, 10))
+
+    def _build_output_area(self):
+        output_frame = ttk.Frame(self, padding=(20, 0, 20, 0))
+        output_frame.pack(fill="both", expand=True)
+
+        label = ttk.Label(output_frame, text="Ausgabeübersicht:")
+        label.pack(anchor="w", pady=(0, 6))
+
+        self.output_text = scrolledtext.ScrolledText(
+            output_frame,
+            wrap="word",
+            height=24,
+            font=("Consolas", 10),
+            background="#ffffff",
+            foreground="#111111",
+            borderwidth=1,
+            relief="solid",
+        )
+        self.output_text.pack(fill="both", expand=True)
+        self.output_text.insert("end", "Drücke eine Schaltfläche, um die Prüfungen zu starten.\n")
+        self.output_text.configure(state="disabled")
+
+    def _build_status_bar(self):
+        status_frame = ttk.Frame(self, padding=(20, 10, 20, 10))
+        status_frame.pack(fill="x")
+
+        self.status_label = ttk.Label(status_frame, text="Bereit.")
+        self.status_label.pack(anchor="w")
+
+    def _set_status(self, message):
+        self.status_label.config(text=message)
+
+    def _set_buttons_state(self, state):
+        for child in self.winfo_children():
+            self._set_widget_state(child, state)
+
+    def _set_widget_state(self, widget, state):
+        try:
+            widget.configure(state=state)
+        except (tk.TclError, AttributeError):
+            pass
+        for child in widget.winfo_children():
+            self._set_widget_state(child, state)
+
+    def _clear_output(self):
+        self.output_text.configure(state="normal")
+        self.output_text.delete("1.0", "end")
+        self.output_text.configure(state="disabled")
+
+    def _append_output(self, message):
+        self.output_text.configure(state="normal")
+        self.output_text.insert("end", message)
+        self.output_text.insert("end", "\n")
+        self.output_text.see("end")
+        self.output_text.configure(state="disabled")
+
+    def _run_task(self, task_func, title):
+        self._set_status(f"{title}... Bitte warten.")
+        self._set_buttons_state("disabled")
+        self._clear_output()
+
+        def worker():
+            try:
+                self._task_result = task_func()
+                self._task_error = None
+            except Exception:
+                self._task_result = ""
+                self._task_error = traceback.format_exc()
+
+        self._task_thread = threading.Thread(target=worker, daemon=True)
+        self._task_thread.start()
+        self.after(100, self._poll_task, title)
+
+    def _poll_task(self, title):
+        if self._task_thread and self._task_thread.is_alive():
+            self.after(120, self._poll_task, title)
+            return
+
+        if self._task_error:
+            self._append_output("Ein Fehler ist aufgetreten:\n")
+            self._append_output(self._task_error)
+            self._set_status("Fehler beim Ausführen der Aufgabe.")
+        else:
+            self._append_output(self._task_result or f"{title} abgeschlossen.")
+            self._set_status(f"{title} abgeschlossen.")
+
+        self._set_buttons_state("normal")
+
+    def _get_transport_id(self):
+        tid = self.transport_id_entry.get().strip()
+        return tid if tid else None
+
+    def on_run_phase_1(self):
+        tid = self._get_transport_id()
+
+        def task():
+            if tid:
+                return run_phase_1_checks_text([tid])
+            return run_phase_1_checks_text()
+
+        self._run_task(task, "Phase 1 prüfen")
+
+    def on_run_phase_2(self):
+        self._run_task(run_phase_2_checks_text, "Phase 2 prüfen")
+
+    def on_run_all(self):
+        def task():
+            parts = []
+            tid = self._get_transport_id()
+            if tid:
+                parts.append(run_phase_1_checks_text([tid]))
+            else:
+                parts.append(run_phase_1_checks_text())
+            parts.append(run_phase_2_checks_text())
+            return "\n\n".join(parts)
+
+        self._run_task(task, "Alle Prüfungen ausführen")
+
+    def on_run_single_id(self):
+        tid = self._get_transport_id()
+        if not tid:
+            self._append_output("Bitte gib eine Transport-ID ein, um sie einzeln zu prüfen.")
+            self._set_status("Transport-ID erforderlich.")
+            return
+
+        def task():
+            return run_phase_1_checks_text([tid])
+
+        self._run_task(task, "Transport-ID prüfen")
+
+
 if __name__ == "__main__":
-    show_menu()     
+    app = CoolchainApp()
+    app.mainloop()     
