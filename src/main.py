@@ -1,3 +1,11 @@
+"""
+@file main.py
+@brief Hauptprogramm der IoT-Kühlkettenüberwachung.
+
+Dieses Programm stellt eine Konsolenoberfläche bereit und verbindet die Prüfungen
+aus Projektphase 1 mit den Erweiterungen aus Projektphase 2.
+"""
+
 from db import load_records, get_connection
 import checks
 
@@ -33,6 +41,12 @@ TRANSPORT_IDS = [
 
 
 def get_datetime_from_row(row):
+    """
+    @brief Ermittelt den Zeitstempel aus einem Datenbankdatensatz.
+
+    @param row Datensatz aus der Datenbank.
+    @return Zeitstempel des Datensatzes.
+    """
     try:
         return row.datetime
     except AttributeError:
@@ -40,6 +54,16 @@ def get_datetime_from_row(row):
 
 
 def evaluate_one(tid):
+        """
+    @brief Prüft eine einzelne Transport-ID.
+
+    Die Funktion führt die Prüfungen auf Stimmigkeit, Übergabezeit und
+    Gesamttransportdauer aus. Bei Übergabefehlern wird zusätzlich versucht,
+    eine Wetterinformation zu laden.
+
+    @param tid Transport-ID als Zeichenkette.
+    @return Tupel aus Statuswert und Meldung.
+    """
     try:
         rows = load_records(COMPANY_ID, tid)
     except Exception as error:
