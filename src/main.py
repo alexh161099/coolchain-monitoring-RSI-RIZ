@@ -4,11 +4,15 @@
 
 Dieses Programm stellt eine Konsolenoberfläche bereit und verbindet die Prüfungen
 aus Projektphase 1 mit den Erweiterungen aus Projektphase 2.
+@details
+- Projektphase 1: Stimmigkeit, Übergabe, Transportdauer prüfen
+- Projektphase 2: Temperaturüberwachung, entschlüsselte Firmendaten, Wetterdaten 
+@date 05.2026
+@author Fynn Bremer, Alexander Holzenkamp, Tom Stoelken
 """
 
 from db import load_records, get_connection
 import checks
-
 from temperature import check_temperature_data, print_temperature_report
 from crypto_utils import load_decrypted_companies, print_company_report
 from weather import get_weather_for_plz
@@ -54,12 +58,8 @@ def get_datetime_from_row(row):
 
 
 def evaluate_one(tid):
-        """
+    """
     @brief Prüft eine einzelne Transport-ID.
-
-    Die Funktion führt die Prüfungen auf Stimmigkeit, Übergabezeit und
-    Gesamttransportdauer aus. Bei Übergabefehlern wird zusätzlich versucht,
-    eine Wetterinformation zu laden.
 
     @param tid Transport-ID als Zeichenkette.
     @return Tupel aus Statuswert und Meldung.
@@ -109,9 +109,6 @@ def evaluate_one(tid):
 def run_phase_1_checks():
     """
     @brief Führt die Prüfungen aus Projektphase 1 aus.
-
-    Alle vorgesehenen Transport-IDs werden nacheinander geprüft und in der
-    Konsole ausgegeben.
     """
     print("\n=== Prüfung Projektphase 1 ===\n")
 
@@ -122,11 +119,8 @@ def run_phase_1_checks():
 
 
 def run_phase_2_checks():
-        """
+    """
     @brief Führt die Erweiterungen aus Projektphase 2 aus.
-
-    Dazu gehören die Temperaturüberwachung und die Ausgabe entschlüsselter
-    Firmendaten.
     """
     print("\n=== Erweiterungen Projektphase 2 ===\n")
 
@@ -160,8 +154,8 @@ def show_menu():
     """
     @brief Stellt die Konsolenbedienung bereit.
 
-    Der Benutzer kann auswählen, ob eine einzelne Prüfung, mehrere Prüfungen
-    oder die Phase-2-Erweiterungen gestartet werden sollen.
+    Der Benutzer kann auswählen, ob Projektphase 1, Projektphase 2
+    oder beide Prüfungen ausgeführt werden sollen.
     """
     while True:
         print("\n===================================")

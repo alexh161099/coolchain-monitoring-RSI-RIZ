@@ -1,9 +1,10 @@
 
-"""""
-Datenbankzugriff für die Kühlkettenprüfung.
-Liest die Transportdaten aus der SQL-Server-Datenbank.
-""""
+"""
+@file db.py
+@brief Datenbankzugriff für die Kühlkettenprüfung.
 
+Liest die Transportdaten aus der SQL-Server-Datenbank.
+"""
 
 import pyodbc
 
@@ -16,12 +17,11 @@ DRIVER = "ODBC Driver 18 for SQL Server"
 
 
 def get_connection():
-     """
+    """
     @brief Erstellt eine Verbindung zur SQL-Server-Datenbank.
 
     @return Aktive pyodbc-Datenbankverbindung.
     """
-    """Stellt eine Verbindung zur SQL-Server-Datenbank her."""
     conn_str = (
         f"DRIVER={{{DRIVER}}};"
         f"SERVER={SERVER},1433;"
@@ -38,8 +38,11 @@ def get_connection():
 
 def load_records(company_id, transport_id):
     """
-    Holt alle Kühlketteneinträge zu einer Transport-ID.
-    Rückgabe: Liste mit station_id, direction und datetime.
+    @brief Lädt alle Kühlketteneinträge zu einer Transport-ID.
+
+    @param company_id ID der Firma.
+    @param transport_id Transport-ID.
+    @return Liste mit Datensätzen (station_id, direction, datetime).
     """
     query = """
         SELECT
