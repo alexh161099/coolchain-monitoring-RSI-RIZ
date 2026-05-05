@@ -4,9 +4,11 @@
 
 Dieses Programm stellt eine Konsolenoberfläche bereit und verbindet die Prüfungen
 aus Projektphase 1 mit den Erweiterungen aus Projektphase 2.
+
 @details
 - Projektphase 1: Stimmigkeit, Übergabe, Transportdauer prüfen
-- Projektphase 2: Temperaturüberwachung, entschlüsselte Firmendaten, Wetterdaten 
+- Projektphase 2: Temperaturüberwachung, entschlüsselte Firmendaten, Wetterdaten
+
 @date 05.2026
 @author Fynn Bremer, Alexander Holzenkamp, Tom Stoelken
 """
@@ -55,7 +57,8 @@ def get_datetime_from_row(row):
         return row.datetime
     except AttributeError:
         return row[2]
-    
+
+
 def get_station_id_from_row(row):
     """
     @brief Ermittelt die Transportstations-ID aus einem Datenbankdatensatz.
@@ -68,9 +71,13 @@ def get_station_id_from_row(row):
     except AttributeError:
         return row[0]
 
+
 def evaluate_one(tid):
     """
     @brief Prüft eine einzelne Transport-ID.
+
+    Die Funktion prüft Stimmigkeit, Übergabezeit und Transportdauer.
+    Bei Übergabefehlern wird zusätzlich die Wettertemperatur am Übergabeort abgefragt.
 
     @param tid Transport-ID als Zeichenkette.
     @return Tupel aus Statuswert und Meldung.
@@ -93,7 +100,13 @@ def evaluate_one(tid):
         try:
             datetime_value = get_datetime_from_row(rows[-1])
             station_id = get_station_id_from_row(rows[-1])
+
+            # PLZ wird zuerst dynamisch über die Transportstation geladen.
             plz = load_station_plz(station_id)
+
+            # Falls z. B. ein Kühltransporter keine PLZ besitzt, wird eine Fallback-PLZ verwendet.
+            if not plz or str(plz) == "0":
+                plz = "30159"
 
             temp = get_weather_for_plz(plz, datetime_value)
 
@@ -101,6 +114,7 @@ def evaluate_one(tid):
                 weather_info = f" | Wetter: {temp} °C"
             else:
                 weather_info = " | Wetterdaten nicht verfügbar"
+
         except Exception:
             weather_info = " | Wetterdaten nicht verfügbar"
 
@@ -196,4 +210,4 @@ def show_menu():
 
 
 if __name__ == "__main__":
-    show_menu()
+    show_menu()     
