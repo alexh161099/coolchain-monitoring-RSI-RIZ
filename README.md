@@ -33,7 +33,7 @@ Das Programm prüft folgende Kriterien:
 
 ## Projektphase 2 (Erweiterung)
 
-### Temperaturüberwachung
+### Temperaturüberwachung - Abfrage der Solltemperaturen, Vergleich mit IST-Temperaturen
 
 * Auswertung der Tabelle `tempdata`
 * Gültiger Bereich: **+2 °C bis +4 °C**
@@ -41,7 +41,7 @@ Das Programm prüft folgende Kriterien:
 
 ---
 
-### Entschlüsselung der Daten
+### Entschlüsselung der Daten 
 
 * Tabellen:
 
@@ -51,7 +51,7 @@ Das Programm prüft folgende Kriterien:
 
 ---
 
-### Wetterdaten bei Übergabefehlern
+### Wetterdaten bei Übergabefehlern - Zu lange Kühlkettenunterbrechung
 
 * Bei Überschreitung der Übergabezeit wird die Außentemperatur abgefragt
 * Datenquelle: **Visual Crossing API**
